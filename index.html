@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>stlite app</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.39.0/build/stlite.css"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.39.0/build/stlite.js"></script>
+    <script>
+      stlite.mount(
+        `
+import streamlit as st
+import tarfile
+import io
+import gzip
+
+# Create a Streamlit app
+st.title("Tar.gz File Explorer")
+
+# Upload file
+uploaded_file = st.file_uploader("Upload a .tar.gz file", type=["tar.gz"])
+
+if uploaded_file is not None:
+    if uploaded_file.name.endswith('.tar.gz'):
+        with st.spinner("Extracting and listing files..."):
+            # Read the uploaded .tar.gz file
+            file_buffer = io.BytesIO(uploaded_file.read())
+            
+            # Extract the files
+            try:
+                with tarfile.open(fileobj=gzip.GzipFile(fileobj=file_buffer, mode='rb')) as archive:
+                    file_list = archive.getnames()
+                    st.success(f"File {uploaded_file.name} was successfully extracted.")
+                    
+                    # List the files in the archive
+                    st.subheader("Files in the Archive:")
+                    for file in file_list:
+                        st.write(file)
+            except tarfile.TarError:
+                st.error("Error extracting the .tar.gz file.")
+    else:
+        st.error("Invalid file format. Please upload a .tar.gz file.")
+`,
+        document.getElementById("root")
+      );
+    </script>
+  </body>
+</html>
+
